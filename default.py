@@ -5,6 +5,7 @@ import xbmc
 import urlparse
 import xbmcplugin
 import xbmcaddon
+import xbmcgui
 from lib.main import Application
 
 my_addon = xbmcaddon.Addon()
@@ -20,9 +21,25 @@ app = Application()
 app.mem.username=my_addon.getSetting('username')
 app.mem.password=my_addon.getSetting('password')
 
+print app.mem.username
+print app.mem.password
+
+
+mode = args.get('mode', None)
+
 
 if not app.mem.has_saved_creds():
-    app.mem.login_member(name=app.mem.username,pswd=app.mem.password)
+    ret = app.mem.login_member(name=app.mem.username,pswd=app.mem.password)
+    if ret["logged_in"]==False:
+        mode = ['exit']
+        if ret["bad_creds"]:
+            dialog = xbmcgui.Dialog()
+            dialog.ok("bad credentials","Wrong username or password!")
+        else:
+            xbmcgui.Dialog.notification("Error","error during login",xbmcgui.NOTIFICATION_ERROR)
+
+
+
     app.mem.save_user_info()
 
 
@@ -32,8 +49,6 @@ player = xbmc.Player()
 
 def build_url(query):
     return base_url + '?' + urllib.urlencode(query)
-
-mode = args.get('mode', None)
 
 genres = app.api.get_genres()
 
@@ -268,4 +283,8 @@ elif mode[0] == 'track':
         #player.stop()
         #xbmcgui.Dialog().ok("Error","test","test","test",)
 
-print "Rhapsody: Plugin closed"
+elif mode[0] == 'exit':
+    print "terminated"
+
+
+print "RUNnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
